@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: farmdex-db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: farmdex_user
+      POSTGRES_PASSWORD: farmdex_pass
+      POSTGRES_DB: farmdex
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: farmdex-api
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://farmdex_user:farmdex_pass@postgres:5432/farmdex
+
+volumes:
+  pgdata:
