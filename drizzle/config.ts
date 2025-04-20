@@ -11,11 +11,35 @@ const client = new Client({
   database: 'farmdex',
 });
 
-async function main() {
-  await client.connect();
-  const db = drizzle(client, { schema });
-  await migrate(db, { migrationsFolder: 'drizzle/migrations' });
-  await client.end();
-}
+export const db = drizzle(client, { schema });
 
-main();
+async function main() {
+  try {
+    await client.connect();
+
+    await migrate(db, { migrationsFolder: 'drizzle/migrations' });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error during database connection or migration:', error.message);
+    } else {
+      console.error('Unknown error occurred during database operation.');
+    }
+  } finally {
+    try {
+      await client.end();
+    } catch (endError) {
+      if (endError instanceof Error) {
+        console.error('Error during closing database connection:', endError.message);
+      } else {
+        console.error('Unknown error occurred during closing database connection.');
+      }
+    }
+  }
+}
+main().catch(err => {
+  if (err instanceof Error) {
+    console.error('Error in main execution:', err.message);
+  } else {
+    console.error('Unknown error in main execution.');
+  }
+});
