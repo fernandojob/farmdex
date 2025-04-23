@@ -2,7 +2,7 @@ import type { Config } from 'drizzle-kit';
 
 export default {
   schema: './src/database/schemas/**/*.ts',
-  out: './drizzle/migrations',
+  out: './src/database/migrations',
   dialect: 'postgresql',
   dbCredentials: {
     host: 'localhost',
