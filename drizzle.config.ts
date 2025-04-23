@@ -1,14 +1,15 @@
 import type { Config } from 'drizzle-kit';
 
 export default {
-  schema: './drizzle/schema.ts',
+  schema: './src/database/schemas/**/*.ts',
   out: './drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    host: 'postgres',
+    host: 'localhost',
     port: 5432,
-    user: 'farmdex_user',
-    password: 'farmdex_pass',
+    user: 'postgres',
+    password: 'admin',
     database: 'farmdex',
+    ssl: false,
   },
 } satisfies Config;
