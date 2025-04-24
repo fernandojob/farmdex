@@ -1,48 +1,53 @@
-import { IsString, IsEmail, IsNotEmpty, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsDateString } from 'class-validator';
 
 export class CreateClientDto {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Nome não pode ser vazio',
+  })
   name: string;
 
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 
+  @IsNotEmpty()
   @IsString()
   cpf: string;
 
+  @IsNotEmpty()
   @IsDateString()
   birthDate: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   phone?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  zipCode?: string;
+  zipCode: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  country?: string;
+  country: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  state?: string;
+  state: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  city?: string;
+  city: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  address?: string;
+  address: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  number?: string;
+  number: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  complement?: string;
+  complement: string;
 }
