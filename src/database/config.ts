@@ -1,13 +1,12 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 import * as schema from './schema';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const client = new Client({
-  host: 'localhost',
-  port: 5432,
-  user: 'postgres',
-  password: 'admin',
-  database: 'farmdex',
+  connectionString: process.env.DATABASE_URL,
 });
 
 client.connect().catch(err => {
