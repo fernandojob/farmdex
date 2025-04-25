@@ -2,9 +2,8 @@ import { Inject, Injectable, ForbiddenException, NotFoundException } from '@nest
 import { DB } from 'src/database/config';
 import { farms } from 'src/database/schemas/farm.schema';
 import { clients } from 'src/database/schemas/client.schema';
-import { CreateFarmDto } from '../dtos/create-farm.dto';
-import { eq, ilike, sql, isNull, SQL } from 'drizzle-orm';
-import { FindFarmsDto } from '../dtos/find-farms.dto'; // Importe o DTO aqui
+import { CreateFarmDto, UpdateFarmDto, FindFarmsDto } from '../dtos';
+import { eq, ilike, sql, isNull, SQL, and } from 'drizzle-orm';
 import { SortOrder } from '../types/sortable-farm-fields';
 
 @Injectable()
@@ -33,22 +32,18 @@ export class FarmsService {
   }
 
   async findAll(params: FindFarmsDto & { userId: number }) {
-    // Use o DTO diretamente
     const { page, limit, name, sortBy, order, userId } = params;
     const offset = (page - 1) * limit;
 
-    // 1) Lista de condições, sem valores undefined
     const rawFilters = [
       eq(clients.userId, userId),
       name ? ilike(farms.name, `%${name}%`) : undefined,
-      isNull(farms.deletedAt), // Só fazendas não deletadas
+      isNull(farms.deletedAt),
     ];
     const filters = rawFilters.filter((f): f is SQL => Boolean(f));
 
-    // 2) Combina filtros em um único SQL: "cond1 AND cond2 AND cond3"
     const whereClause = filters.reduce((prev, curr) => sql`${prev} AND ${curr}`);
 
-    // 3) Monta a query principal
     const query = this.db
       .select()
       .from(farms)
@@ -58,9 +53,7 @@ export class FarmsService {
       .limit(limit)
       .offset(offset);
 
-    // 4) Busca e contagem em paralelo
     const [results, total] = await Promise.all([
-      // 4.1) Busca e 4.2) Contagem
       query,
       this.db
         .select({ count: sql<number>`count(*)` })
@@ -76,5 +69,65 @@ export class FarmsService {
       page,
       lastPage: Math.ceil(total / limit),
     };
+  }
+
+  async findById(id: string, userId: number) {
+    const result = await this.db
+      .select({
+        farm: farms,
+        client: clients,
+      })
+      .from(farms)
+      .innerJoin(clients, eq(farms.clientId, clients.id))
+      .where(and(eq(farms.id, Number(id)), eq(clients.userId, userId), isNull(farms.deletedAt)));
+
+    if (!result.length) {
+      throw new NotFoundException('Fazenda não encontrada ou acesso negado');
+    }
+
+    return result[0].farm;
+  }
+
+  async update(id: number, dto: UpdateFarmDto, userId: number) {
+    const result = await this.db
+      .select()
+      .from(farms)
+      .innerJoin(clients, eq(farms.clientId, clients.id))
+      .where(and(eq(farms.id, id), eq(clients.userId, userId), isNull(farms.deletedAt)))
+      .limit(1);
+
+    const [farmFound] = result;
+
+    if (!farmFound) {
+      throw new ForbiddenException('Você não tem permissão para editar esta fazenda.');
+    }
+
+    await this.db
+      .update(farms)
+      .set({
+        ...dto,
+        foundationDate: dto.foundationDate ? new Date(dto.foundationDate) : undefined,
+        updatedAt: new Date(),
+      })
+      .where(eq(farms.id, id));
+
+    return { message: 'Fazenda atualizada com sucesso.' };
+  }
+
+  async delete(id: number, userId: number) {
+    const [farmFound] = await this.db
+      .select()
+      .from(farms)
+      .innerJoin(clients, eq(farms.clientId, clients.id))
+      .where(and(eq(farms.id, id), eq(clients.userId, userId), isNull(farms.deletedAt)))
+      .limit(1);
+
+    if (!farmFound) {
+      throw new ForbiddenException('Você não tem permissão para deletar esta fazenda.');
+    }
+
+    await this.db.update(farms).set({ deletedAt: new Date(), updatedAt: new Date() }).where(eq(farms.id, id));
+
+    return { message: 'Fazenda deletada com sucesso.' };
   }
 }
