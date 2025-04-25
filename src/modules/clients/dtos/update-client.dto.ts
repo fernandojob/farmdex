@@ -1,5 +1,6 @@
-import { IsOptional, IsString, IsEmail } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsDate } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class UpdateClientDto {
   @IsOptional()
@@ -18,6 +19,8 @@ export class UpdateClientDto {
   cpf?: string;
 
   @IsOptional()
+  @Type(() => Date)
+  @IsDate()
   @ApiPropertyOptional({ example: '1996-01-01' })
   birthDate?: Date;
 
