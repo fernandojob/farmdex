@@ -1,7 +1,26 @@
 # FarmDex API
 
-Este repositório contém a API **FarmDex**, desenvolvida com NestJS e Drizzle ORM para PostgreSQL, containerizada com Docker e Docker Compose.  
-<br>
+Este repositório contém a API FarmDex, desenvolvida com NestJS, utilizando Drizzle ORM para integração com PostgreSQL, e totalmente containerizada com Docker e Docker Compose.
+
+O projeto aplica boas práticas como:
+
+- Injeção de Dependência e Inversão de Controle
+
+- Repository Pattern (no módulo de clientes)
+
+- Decorators Personalizados
+
+- Arquitetura Modular
+
+- DRY Principle (Don't Repeat Yourself)
+
+- Testes Unitários (com foco no fluxo de criação e validação de clientes)
+
+- Swagger/OpenAPI para documentação de rotas (com decorators personalizados para manter os controllers limpos)
+
+- Conexão assíncrona ao banco de dados via Drizzle
+
+- Arquitetura pensada para escalabilidade
 
 > **Documentação e testes de rotas** já estão disponíveis via Swagger UI em: [`http://localhost:3001/docs`](http://localhost:3001/docs)
 
